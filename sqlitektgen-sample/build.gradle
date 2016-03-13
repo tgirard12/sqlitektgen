@@ -1,0 +1,26 @@
+group 'com.tgirard12'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    repositories {
+        mavenCentral()
+        flatDir {
+            dirs '../sqlitektgen-gradle-plugin/build/libs'
+        }
+    }
+    dependencies {
+        classpath 'com.tgirard12:sqlitektgen:1.0-SNAPSHOT'
+    }
+}
+
+apply plugin: 'groovy'
+apply plugin: 'com.tgirard12.sqlitektgen'
+//apply plugin: 'sqlitektgen'
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+}
