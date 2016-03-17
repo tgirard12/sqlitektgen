@@ -1,4 +1,4 @@
-package com.tgirard12.sqlitektgen.gradle;
+package com.tgirard12.sqlitektgen.gradle
 
 import org.gradle.api.Project
 import org.gradle.api.Task;
@@ -25,10 +25,6 @@ public class SqliteKtGenPluginTest {
         assert this.task != null
     }
 
-    @Test(expected = Exception.class)
-    public void test_task_no_param_exception() {
-
-    }
 
     @Test
     public void test_task_param_change() {
