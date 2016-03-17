@@ -23,7 +23,8 @@ class SqliteKtGenTask extends DefaultTask {
         extension = project.extensions.getByType(SqliteKtGenExtension.class)
         checkExtensionParam()
 
-        databaseFileParser.parseDatabaseFile(extension.databaseFile)
+        def tables = databaseFileParser.parseDatabaseFile(extension.databaseFile)
+
     }
 
     def checkExtensionParam() {
@@ -86,6 +87,48 @@ class SqliteKtGenTask extends DefaultTask {
                 table.queries = tab.queries
             }
             return tables
+        }
+    }
+
+    class KotlinClassGenerator {
+
+        def getKotlinClass(Table table) {
+            """
+package ${table.ktPackage}
+
+class ${table.ktClass} {
+${getFields(table.columns)}
+    companion object {
+        const val TABLE_NAME = "${table.name}"
+${getConstColumnName(table.columns)}
+${getConstQueries(table.queries)}
+    }
+}
+"""
+        }
+
+        def getFields(List<Table.Column> columns) {
+            def strb = new StringBuilder()
+            columns.forEach {
+                strb.append """\tvar ${it.ktField}: ${it.ktType}\n"""
+            }
+            return strb.toString()
+        }
+
+        def getConstColumnName(List<Table.Column> columns) {
+            def strb = new StringBuilder()
+            columns.forEach {
+                strb.append """\t\tconst val ${it.name.toUpperCase()} = "${it.name}"\n"""
+            }
+            return strb.toString()
+        }
+
+        def getConstQueries(Map<String, String> queries) {
+            def strb = new StringBuilder()
+            queries.forEach { key, values ->
+                strb.append """\t\tconst val ${key.toUpperCase()} = "${values}"\n"""
+            }
+            return strb.toString()
         }
     }
 }
