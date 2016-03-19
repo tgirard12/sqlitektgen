@@ -63,8 +63,9 @@ public class KotlinClassGeneratorTest extends Specification {
     def 'test classGenerator.getFromCursor'() {
         when:
         def table = new Table(name: "my_table", ktClass: "MyTable",
-                columns: [new Table.Column(name: "column_1", ktField: "column_1", ktType: "String"),
-                          new Table.Column(name: "column_2", ktField: "field2", ktType: "Long")])
+                columns: [new Table.Column(name: "column_1", ktField: "column_1", ktType: "String", select: true),
+                          new Table.Column(name: "column_2", ktField: "field2", ktType: "Long", select: true),
+                          new Table.Column(name: "column_3", ktField: "field3", ktType: "Long", select: false)])
         def getFromCursorGen = classGenerator.getFromCursor(table)
 
         def getFromCursor = """\

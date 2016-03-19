@@ -145,8 +145,10 @@ ${getFromCursor(table)}
             def strb = new StringBuilder("\t\tfun fromCursor(c: Cursor) {\n")
             strb.append("\t\t\tval _entry = ${table.ktClass}()\n")
             table.columns.forEach {
-                strb.append "\t\t\t_entry.${it.ktField} = "
-                strb.append "c.get${it.ktType}(c.getColumnIndex(${it.name.toUpperCase()}))\n"
+                if (it.select) {
+                    strb.append "\t\t\t_entry.${it.ktField} = "
+                    strb.append "c.get${it.ktType}(c.getColumnIndex(${it.name.toUpperCase()}))\n"
+                }
             }
             strb.append("\t\t\treturn _entry\n")
             strb.append("\t\t}\n")
