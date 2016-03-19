@@ -102,6 +102,7 @@ ${getFields(table.columns)}
         const val TABLE_NAME = "${table.name}"
 ${getConstColumnName(table.columns)}
 ${getConstQueries(table.queries)}
+${getFromCursor(table)}
     }
 }
 """
@@ -128,6 +129,17 @@ ${getConstQueries(table.queries)}
             queries.forEach { key, values ->
                 strb.append """\t\tconst val ${key.toUpperCase()} = "${values}"\n"""
             }
+            return strb.toString()
+        }
+
+        def getFromCursor(Table table) {
+            def strb = new StringBuilder("\t\tfun fromCursor(c: Cursor) {\n")
+            strb.append("\t\t\tval _entry = ${table.ktClass}()\n")
+            table.columns.forEach {
+                strb.append """\t\t\t_entry.${it.ktField} = c.get${it.ktType}(c.getColumnIndex(${it.name.toUpperCase()}))\n"""
+            }
+            strb.append("\t\t\treturn _entry\n")
+            strb.append("\t\t}\n")
             return strb.toString()
         }
     }

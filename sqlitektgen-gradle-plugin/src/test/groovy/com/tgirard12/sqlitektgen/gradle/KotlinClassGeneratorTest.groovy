@@ -60,6 +60,25 @@ public class KotlinClassGeneratorTest extends Specification {
         assert queriesGen == queriesString
     }
 
+    def 'test classGenerator.getFromCursor'() {
+        when:
+        def table = new Table(name: "my_table", ktClass: "MyTable",
+                columns: [new Table.Column(name: "column_1", ktField: "column_1", ktType: "String"),
+                          new Table.Column(name: "column_2", ktField: "field2", ktType: "Long")])
+        def getFromCursorGen = classGenerator.getFromCursor(table)
+
+        def getFromCursor = """\
+        fun fromCursor(c: Cursor) {
+            val _entry = MyTable()
+            _entry.column_1 = c.getString(c.getColumnIndex(COLUMN_1))
+            _entry.field2 = c.getLong(c.getColumnIndex(COLUMN_2))
+            return _entry
+        }
+"""
+        then:
+        assert getFromCursorGen.expand(4) == getFromCursor
+    }
+
     def 'test generate class with default values'() {
         when:
         def table = new Table(name: "my_table", ktClass: "my_table", ktPackage: "com.tgirard12.sqlitektgen",
@@ -85,6 +104,13 @@ class my_table {
 
         const val QUERY1 = "select * from my_table"
         const val QUERY2 = "select count(*) from my_table"
+
+        fun fromCursor(c: Cursor) {
+            val _entry = my_table()
+            _entry.column_1 = c.getString(c.getColumnIndex(COLUMN_1))
+            _entry.column_2 = c.getString(c.getColumnIndex(COLUMN_2))
+            return _entry
+        }
 
     }
 }
