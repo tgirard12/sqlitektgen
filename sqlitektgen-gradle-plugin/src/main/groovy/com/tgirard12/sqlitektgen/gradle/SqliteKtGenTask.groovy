@@ -88,6 +88,15 @@ class SqliteKtGenTask extends DefaultTask {
             }
             return tables
         }
+
+        String isKtTypeAccepted(String ktType) {
+            try {
+                def type = Table.KtType.valueOf(ktType)
+                return type.name()
+            } catch (Exception ex) {
+                throw new SqliteKtGenException("Type ${ktType} not supported. Supported types : ${Table.KtType.values().toString()}")
+            }
+        }
     }
 
     class KotlinClassGenerator {

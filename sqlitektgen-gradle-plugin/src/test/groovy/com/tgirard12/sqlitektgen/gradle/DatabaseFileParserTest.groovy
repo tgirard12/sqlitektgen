@@ -1,6 +1,7 @@
 package com.tgirard12.sqlitektgen.gradle
 
-import spock.lang.Specification;
+import spock.lang.Specification
+import spock.lang.Unroll;
 
 /**
  */
@@ -83,6 +84,27 @@ public class DatabaseFileParserTest extends Specification {
         then:
         assert exception instanceof SqliteKtGenException
         assert exception.message == "'columns.name' field required"
+    }
+
+    @Unroll
+    def 'check all ktType accepted'() {
+        expect:
+        def ex = getException { parser.isKtTypeAccepted(type) }
+
+        if (exReturn == null)
+            assert ex == null
+        else
+            assert exReturn.getMessage() == ex.getMessage()
+
+        where:
+        type     | exReturn
+        'String' | null
+        'Short'  | null
+        'Int'    | null
+        'Long'   | null
+        'Float'  | null
+        'Double' | null
+        'Date'   | new SqliteKtGenException("Type Date not supported. Supported types : [String, Short, Int, Long, Float, Double, Boolean]")
     }
 
     def 'test parse Table with default fields'() {

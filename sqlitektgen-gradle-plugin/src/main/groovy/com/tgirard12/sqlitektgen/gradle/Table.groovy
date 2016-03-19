@@ -25,4 +25,8 @@ class Table {
         Boolean insertOrUpdate
         Boolean select
     }
+
+    enum KtType {
+        String, Short, Int, Long, Float, Double, Boolean
+    }
 }
