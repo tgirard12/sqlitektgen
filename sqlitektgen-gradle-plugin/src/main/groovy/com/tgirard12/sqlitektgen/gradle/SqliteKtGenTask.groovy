@@ -166,12 +166,13 @@ ${getContentValue(table.columns)}
         }
 
         def getCursorConstructor(ArrayList<Column> columns) {
-            def strb = new StringBuilder("\tconstructor (cursor: Cursor) {\n")
+            def strb = new StringBuilder("\tconstructor (cursor: Cursor) : this(\n")
             columns.forEach {
-                strb.append "\t\t${it.ktField} = ${getCursorGetValue(it)}\n"
+                strb.append "\t\t${it.ktField} = ${getCursorGetValue(it)},\n"
             }
+            strb.deleteCharAt(strb.lastIndexOf(','))
             strb.deleteCharAt(strb.lastIndexOf('\n'))
-            strb.append(')\n\t}')
+            strb.append(')')
             return strb.toString()
         }
 

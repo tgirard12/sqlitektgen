@@ -49,12 +49,11 @@ data class my_table (
     val long_null: Long? = null,
     val float_default_value: Float = 0) {
 
-    constructor (cursor: Cursor) {
-        string_null = cursor.getString(cursor.getColumnIndex(STRING_NULL))
-        string_not_null = cursor.getString(cursor.getColumnIndex(STRING_NOT_NULL))
-        long_null = cursor.getLong(cursor.getColumnIndex(LONG_NULL))
+    constructor (cursor: Cursor) : this(
+        string_null = cursor.getString(cursor.getColumnIndex(STRING_NULL)),
+        string_not_null = cursor.getString(cursor.getColumnIndex(STRING_NOT_NULL)),
+        long_null = cursor.getLong(cursor.getColumnIndex(LONG_NULL)),
         float_default_value = cursor.getFloat(cursor.getColumnIndex(FLOAT_DEFAULT_VALUE)))
-    }
 
     companion object {
         const val TABLE_NAME = "my_table"
