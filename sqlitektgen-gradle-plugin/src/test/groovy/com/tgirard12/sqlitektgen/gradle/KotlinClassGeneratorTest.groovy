@@ -40,6 +40,9 @@ public class KotlinClassGeneratorTest extends Specification {
         def kotlinclass = """
 package com.tgirard12.sqlitektgen
 
+import android.content.ContentValues
+import android.database.Cursor
+
 data class my_table (
     val string_null: String? = null,
     val string_not_null: String = "",
@@ -68,9 +71,9 @@ data class my_table (
 
     }
 
-    val contentValue: ContentValue
+    val contentValue: ContentValues
         get() {
-            val cv: ContentValue
+            val cv = ContentValues()
             if (string_null == null) cv.putNull(STRING_NULL) else cv.put(STRING_NULL, string_null)
             cv.put(STRING_NOT_NULL, string_not_null)
             if (long_null == null) cv.putNull(LONG_NULL) else cv.put(LONG_NULL, long_null)

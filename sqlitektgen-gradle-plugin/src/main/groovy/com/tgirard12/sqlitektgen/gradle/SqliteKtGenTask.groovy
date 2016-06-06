@@ -109,6 +109,9 @@ class SqliteKtGenTask extends DefaultTask {
             """
 package ${table.ktPackage}
 
+import android.content.ContentValues
+import android.database.Cursor
+
 data class ${table.ktClass} (
 ${getFields(table.columns)}) {
 
@@ -129,9 +132,9 @@ ${getContentValue(table.columns)}
         def getContentValue(List<Column> columns) {
             def strb = new StringBuilder(
                     """\
-    val contentValue: ContentValue
+    val contentValue: ContentValues
         get() {
-            val cv: ContentValue
+            val cv = ContentValues()
 """)
             columns.forEach {
                 if (it.nullable) {
