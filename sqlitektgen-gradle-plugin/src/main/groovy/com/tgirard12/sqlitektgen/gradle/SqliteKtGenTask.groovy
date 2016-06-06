@@ -137,6 +137,9 @@ ${getContentValue(table.columns)}
             val cv = ContentValues()
 """)
             columns.forEach {
+                if (!it.insertOrUpdate)
+                    return
+
                 if (it.nullable) {
                     strb.append """\
             if ($it.ktField == null) cv.putNull(${it.nameUpper()}) else cv.put(${it.nameUpper()}, $it.ktField)\n"""
