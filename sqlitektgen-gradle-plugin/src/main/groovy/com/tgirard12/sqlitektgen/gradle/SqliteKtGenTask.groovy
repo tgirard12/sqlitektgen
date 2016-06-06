@@ -29,6 +29,8 @@ class SqliteKtGenTask extends DefaultTask {
         def tables = databaseFileParser.parseDatabaseFile(extension.databaseFile)
         tables.forEach {
             def clazz = kotlinClassGenerator.getKotlinClass(it)
+            def file = new File(extension.outputDir, it.ktClass + ".kt")
+            file.text = clazz
         }
     }
 
