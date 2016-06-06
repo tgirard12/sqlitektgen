@@ -29,7 +29,8 @@ public class KotlinClassGeneratorTest extends Specification {
 [ {
     "table": "my_table", "ktPackage": "com.tgirard12.sqlitektgen",
     "columns":
-        [ { "name": "column_1" },
+        [ { "name": "string_null" },
+          { "name": "string_not_null", "ktType": "String", "defaultValue": "" },
           { "name": "column_2", "ktType": "Long?" },
           { "name": "column_3", "ktType": "Float", "defaultValue": "0" } ]
 } ]"""
@@ -40,24 +41,28 @@ public class KotlinClassGeneratorTest extends Specification {
 package com.tgirard12.sqlitektgen
 
 data class my_table (
-    val column_1: String? = null,
+    val string_null: String? = null,
+    val string_not_null: String = "",
     val column_2: Long? = null,
     val column_3: Float = 0) {
 
     constructor (cursor: Cursor) {
-        column_1 = cursor.getString(cursor.getColumnIndex(COLUMN_1))
+        string_null = cursor.getString(cursor.getColumnIndex(STRING_NULL))
+        string_not_null = cursor.getString(cursor.getColumnIndex(STRING_NOT_NULL))
         column_2 = cursor.getLong(cursor.getColumnIndex(COLUMN_2))
         column_3 = cursor.getFloat(cursor.getColumnIndex(COLUMN_3)))
     }
 
     companion object {
         const val TABLE_NAME = "my_table"
-        const val COLUMN_1 = "column_1"
+        const val STRING_NULL = "string_null"
+        const val STRING_NOT_NULL = "string_not_null"
         const val COLUMN_2 = "column_2"
         const val COLUMN_3 = "column_3"
 
         const val CREATE_TABLE = \"\"\"CREATE TABLE my_table (
-            column_1 TEXT ,
+            string_null TEXT ,
+            string_not_null TEXT ,
             column_2 INTEGER ,
             column_3 REAL \n        )\"\"\"
 
@@ -66,7 +71,8 @@ data class my_table (
     val contentValue: ContentValue
         get() {
             val cv: ContentValue
-            if (column_1 == null) cv.putNull(COLUMN_1) else cv.put(COLUMN_1, column_1)
+            if (string_null == null) cv.putNull(STRING_NULL) else cv.put(STRING_NULL, string_null)
+            cv.put(STRING_NOT_NULL, string_not_null)
             if (column_2 == null) cv.putNull(COLUMN_2) else cv.put(COLUMN_2, column_2)
             cv.put(COLUMN_3, column_3)
             return cv

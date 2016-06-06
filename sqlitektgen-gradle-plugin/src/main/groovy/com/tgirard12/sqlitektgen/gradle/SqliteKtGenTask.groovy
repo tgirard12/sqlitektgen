@@ -81,7 +81,7 @@ class SqliteKtGenTask extends DefaultTask {
                     column.ktType = col.ktType ?: 'String?'
                     column.nullable = column.ktType.contains('?')
                     column.typeAppend = col.typeAppend ?: ""
-                    column.defaultValue = col.defaultValue ?: "null"
+                    column.defaultValue = col.defaultValue == null ? "null" : col.defaultValue
 
                     if (col.insertOrUpdate == null)
                         column.insertOrUpdate = true
