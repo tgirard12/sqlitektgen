@@ -6,10 +6,12 @@ import spock.lang.Specification;
  */
 public class KotlinClassGeneratorTest extends Specification {
 
-    def SqliteKtGenTask.KotlinClassGenerator classGenerator
+    SqliteKtGenTask.KotlinClassGenerator classGenerator
+    SqliteKtGenTask.DatabaseFileParser parser
 
     def setup() {
         classGenerator = new SqliteKtGenTask.KotlinClassGenerator()
+        parser = new SqliteKtGenTask.DatabaseFileParser()
     }
 
     Exception getException(Closure fun) {
@@ -21,103 +23,119 @@ public class KotlinClassGeneratorTest extends Specification {
         }
     }
 
-    def 'test classGenerator.getFields'() {
+    def 'test json default value to kotlin class'() {
         when:
-        def columns = [new Table.Column(ktField: "field1", ktType: "String"),
-                       new Table.Column(ktField: "field2", ktType: "Long")]
-        def fieldGen = classGenerator.getFields(columns)
-
-        def fields = """\tvar field1: String
-\tvar field2: Long
-"""
-        then:
-        assert fieldGen == fields
-    }
-
-    def 'test classGenerator.getConstColumnName'() {
-        when:
-        def columns = [new Table.Column(name: "column_1"),
-                       new Table.Column(name: "column_2")]
-        def constColGen = classGenerator.getConstColumnName(columns)
-
-        def columnsString = """\t\tconst val COLUMN_1 = "column_1"
-\t\tconst val COLUMN_2 = "column_2"
-"""
-        then:
-        assert constColGen == columnsString
-    }
-
-    def 'test classGenerator.getConstQueries'() {
-        when:
-        def queries = [query1: "select * from my_table",
-                       query2: "select count(*) from my_table"] as HashMap<String, String>
-        def queriesGen = classGenerator.getConstQueries(queries)
-
-        def queriesString = """\t\tconst val QUERY1 = "select * from my_table"
-\t\tconst val QUERY2 = "select count(*) from my_table"
-"""
-        then:
-        assert queriesGen == queriesString
-    }
-
-    def 'test classGenerator.getFromCursor'() {
-        when:
-        def table = new Table(name: "my_table", ktClass: "MyTable",
-                columns: [new Table.Column(name: "column_1", ktField: "column_1", ktType: "String", select: true),
-                          new Table.Column(name: "column_2", ktField: "field2", ktType: "Long", select: true),
-                          new Table.Column(name: "column_3", ktField: "field3", ktType: "Long", select: false)])
-        def getFromCursorGen = classGenerator.getFromCursor(table)
-
-        def getFromCursor = """\
-        fun fromCursor(c: Cursor) {
-            val _entry = MyTable()
-            _entry.column_1 = c.getString(c.getColumnIndex(COLUMN_1))
-            _entry.field2 = c.getLong(c.getColumnIndex(COLUMN_2))
-            return _entry
-        }
-"""
-        then:
-        assert getFromCursorGen.expand(4) == getFromCursor
-    }
-
-    def 'test generate class with default values'() {
-        when:
-        def table = new Table(name: "my_table", ktClass: "my_table", ktPackage: "com.tgirard12.sqlitektgen",
-                columns: [new Table.Column(name: "column_1", ktField: "column_1", ktType: "String", insertOrUpdate: true, select: true, typeAppend: ""),
-                          new Table.Column(name: "column_2", ktField: "column_2", ktType: "String", insertOrUpdate: true, select: true, typeAppend: "")],
-                queries: [query1: "select * from my_table",
-                          query2: "select count(*) from my_table"] as HashMap<String, String>)
-
-
-        def kotlinClassGen = classGenerator.getKotlinClass(table)
+        def json = """
+[ {
+    "table": "my_table", "ktPackage": "com.tgirard12.sqlitektgen",
+    "columns":
+        [ { "name": "column_1" },
+          { "name": "column_2", "ktType": "Long?" },
+          { "name": "column_3", "ktType": "Float", "defaultValue": "0" } ]
+} ]"""
+        def table = parser.parseJsonContent(json)
+        def generateClazz = classGenerator.getKotlinClass(table[0])
 
         def kotlinclass = """
 package com.tgirard12.sqlitektgen
 
-class my_table {
-    var column_1: String
-    var column_2: String
+data class my_table (
+    val column_1: String? = null,
+    val column_2: Long? = null,
+    val column_3: Float = 0) {
+
+    constructor (cursor: Cursor) {
+        column_1 = cursor.getString(cursor.getColumnIndex(COLUMN_1))
+        column_2 = cursor.getLong(cursor.getColumnIndex(COLUMN_2))
+        column_3 = cursor.getFloat(cursor.getColumnIndex(COLUMN_3)))
+    }
 
     companion object {
         const val TABLE_NAME = "my_table"
         const val COLUMN_1 = "column_1"
         const val COLUMN_2 = "column_2"
+        const val COLUMN_3 = "column_3"
 
-        const val QUERY1 = "select * from my_table"
-        const val QUERY2 = "select count(*) from my_table"
-
-        fun fromCursor(c: Cursor) {
-            val _entry = my_table()
-            _entry.column_1 = c.getString(c.getColumnIndex(COLUMN_1))
-            _entry.column_2 = c.getString(c.getColumnIndex(COLUMN_2))
-            return _entry
-        }
+        const val CREATE_TABLE = \"\"\"CREATE TABLE my_table (
+            column_1 TEXT ,
+            column_2 INTEGER ,
+            column_3 REAL \n        )\"\"\"
 
     }
+
+    val contentValue: ContentValue
+        get() {
+            val cv: ContentValue
+            if (column_1 == null) cv.putNull(COLUMN_1) else cv.put(COLUMN_1, column_1)
+            if (column_2 == null) cv.putNull(COLUMN_2) else cv.put(COLUMN_2, column_2)
+            cv.put(COLUMN_3, column_3)
+            return cv
+        }
 }
 """
-
         then:
-        assert kotlinClassGen.expand(4) == kotlinclass
+        assert generateClazz.expand(4) == kotlinclass
     }
 }
+//    String name
+//    String ktField
+//    String ktType
+//    String typeAppend
+//    Boolean insertOrUpdate
+//    Boolean select
+//    String defaultValue
+
+//    def 'test full json to kotlin class'() {
+//        when:
+//        def json = """
+//[ {
+//    "table": "my_table", "ktClass": "MyTable", "ktPackage": "com.tgirard12.sqlitektgen",
+//    "columns":
+//        [ { "name": "stringNull" },
+//          { "name": "string_not_null", "ktField": "stringNotNull", "ktType": "String", "defaultValue": "sqlitektgen" },
+//          { "name": "intNull", "ktType": "Int?" },
+//          { "name": "long_not_null", "ktField": "longNotNull", "ktType": "Long", "defaultValue": "-1" }
+//           ]
+//} ]"""
+//        def table = parser.parseJsonContent(json)
+//        def generateClazz = classGenerator.getKotlinClass(table[0])
+//
+//        def kotlinclass = """
+//package com.tgirard12.sqlitektgen
+//
+//data class MyTable (
+//    val stringNull: String? = null,
+//    val stringNotNull: String = "sqlitektgen",
+//    val intNull: Int? = null,
+//    val longNotNull: Long = -1
+//) {
+//
+//    companion object {
+//        const val TABLE_NAME = "my_table"
+//        const val STRINGNULL = "stringNull"
+//        const val STRING_NOT_NULL = "string_not_null"
+//        const val INTNULL = "intNull"
+//        const val LONG_NOT_NULL = "long_not_null"
+//
+//        const val CREATE_TABLE = \"\"\"CREATE TABLE my_table (
+//            stringNull TEXT ,
+//            string_not_null TEXT ,
+//            intNull INTEGER ,
+//            long_not_null INTEGER \n        )\"\"\"
+//
+//
+//        fun fromCursor(cursor: Cursor) {
+//            return MyTable(
+//                stringNull = cursor.getString(cursor.getColumnIndex(STRINGNULL)),
+//                stringNotNull = cursor.getString(cursor.getColumnIndex(STRING_NOT_NULL)),
+//                intNull = cursor.getInt(cursor.getColumnIndex(INTNULL)),
+//                longNotNull = cursor.getLong(cursor.getColumnIndex(LONG_NOT_NULL)))
+//        }
+//
+//    }
+//}
+//"""
+//        then:
+//        assert generateClazz.expand(4) == kotlinclass
+//    }
+//}
