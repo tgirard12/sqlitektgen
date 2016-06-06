@@ -123,7 +123,7 @@ ${getConstQueries(table.queries)}\
 
 ${getContentValue(table.columns)}
 }
-"""
+""".replaceAll('\t', '    ')
         }
 
         def getContentValue(List<Column> columns) {
