@@ -93,6 +93,7 @@ class SqliteKtGenTask extends DefaultTask {
                         column.select = true
                     else
                         column.select = col.select
+                    column.isInTable = column.select | column.insertOrUpdate
                 }
                 table.queries = tab.queries ?: [] as HashMap
             }
@@ -134,15 +135,17 @@ ${getContentValue(table.columns)}
             val cv = ContentValues()
 """)
             columns.forEach {
-                if (!it.insertOrUpdate)
-                    return
+                if (it.isInTable) {
+                    if (!it.insertOrUpdate)
+                        return
 
-                if (it.nullable) {
-                    strb.append """\
+                    if (it.nullable) {
+                        strb.append """\
             if ($it.ktField == null) cv.putNull(${it.nameUpper()}) else cv.put(${it.nameUpper()}, $it.ktField)\n"""
-                } else {
-                    strb.append """\
+                    } else {
+                        strb.append """\
             cv.put(${it.nameUpper()}, $it.ktField)\n"""
+                    }
                 }
             }
             strb.append """\
@@ -174,7 +177,8 @@ ${getContentValue(table.columns)}
         def getCursorConstructor(ArrayList<Column> columns) {
             def strb = new StringBuilder("\tconstructor (cursor: Cursor) : this(\n")
             columns.forEach {
-                strb.append "\t\t${it.ktField} = ${getCursorGetValue(it)},\n"
+                if (it.isInTable)
+                    strb.append "\t\t${it.ktField} = ${getCursorGetValue(it)},\n"
             }
             strb.deleteCharAt(strb.lastIndexOf(','))
             strb.deleteCharAt(strb.lastIndexOf('\n'))
@@ -213,7 +217,8 @@ ${getContentValue(table.columns)}
         def getConstColumnName(List<Column> columns) {
             def strb = new StringBuilder()
             columns.forEach {
-                strb.append """\t\tconst val ${it.name.toUpperCase()} = "${it.name}"\n"""
+                if (it.isInTable)
+                    strb.append """\t\tconst val ${it.name.toUpperCase()} = "${it.name}"\n"""
             }
             return strb.toString()
         }
@@ -221,12 +226,14 @@ ${getContentValue(table.columns)}
         def getCreateTableQuery(Table table) {
             def strb = new StringBuilder('\t\tconst val CREATE_TABLE = """').append("CREATE TABLE ${table.name} (\n")
             table.columns.forEach {
-                strb.append "\t\t\t${it.name} ${getDbType(it)}"
+                if (it.isInTable) {
+                    strb.append "\t\t\t${it.name} ${getDbType(it)}"
 
-                if (!it.nullable)
-                    strb.append " NOT NULL"
-                strb.append " ${it.typeAppend ?: ""}"
-                strb.append(",\n")
+                    if (!it.nullable)
+                        strb.append " NOT NULL"
+                    strb.append " ${it.typeAppend ?: ""}"
+                    strb.append(",\n")
+                }
             }
             strb.deleteCharAt(strb.lastIndexOf(','))
             strb.append('\t\t)"""\n')

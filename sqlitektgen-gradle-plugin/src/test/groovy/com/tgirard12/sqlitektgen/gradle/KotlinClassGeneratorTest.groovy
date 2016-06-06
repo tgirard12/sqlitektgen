@@ -30,11 +30,13 @@ public class KotlinClassGeneratorTest extends Specification {
     "table": "my_table", "ktPackage": "com.tgirard12.sqlitektgen",
     "columns":
         [ { "name": "string_null" },
+          { "name": "date_no_db",           "ktType": "java.util.Date?",
+                "insertOrUpdate": false,        "select": false,   },
           { "name": "string_not_null",      "ktType": "String"                          },
           { "name": "string_defaultValue",  "ktType": "String", "defaultValue": "OK"    },
           { "name": "long_null",            "ktType": "Long?"                           },
           { "name": "float_default_value",  "ktType": "Float",  "defaultValue": "0"     },
-          { "name": "int_no_insert_pk",        "ktType": "Int",    "defaultValue": "-1",
+          { "name": "int_no_insert_pk",     "ktType": "Int",    "defaultValue": "-1",
                 "insertOrUpdate": false,  "typeAppend": "PRIMARY KEY AUTOINCREMENT"     } ]
 } ]"""
         def table = parser.parseJsonContent(json)
@@ -48,6 +50,7 @@ import android.database.Cursor
 
 data class my_table (
     val string_null: String? = null,
+    val date_no_db: java.util.Date? = null,
     val string_not_null: String,
     val string_defaultValue: String = "OK",
     val long_null: Long? = null,

@@ -27,6 +27,7 @@ class Table {
         String defaultValue
 
         boolean nullable
+        boolean isInTable
 
         def nameUpper() {
             return name.toUpperCase()
