@@ -24,9 +24,12 @@ class Table {
         String typeAppend
         Boolean insertOrUpdate
         Boolean select
-    }
+        String defaultValue
 
-    enum KtType {
-        String, Short, Int, Long, Float, Double, Boolean
+        boolean nullable
+
+        def nameUpper() {
+            return name.toUpperCase()
+        }
     }
 }

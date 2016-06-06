@@ -1,5 +1,6 @@
 package com.tgirard12.sqlitektgen.gradle
 
+import com.tgirard12.sqlitektgen.gradle.Table.Column
 import groovy.json.JsonSlurper
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
@@ -11,10 +12,12 @@ class SqliteKtGenTask extends DefaultTask {
 
     SqliteKtGenExtension extension
     DatabaseFileParser databaseFileParser
+    KotlinClassGenerator kotlinClassGenerator
 
     public SqliteKtGenTask() {
 
         databaseFileParser = new DatabaseFileParser()
+        kotlinClassGenerator = new KotlinClassGenerator()
     }
 
     @TaskAction
@@ -24,7 +27,9 @@ class SqliteKtGenTask extends DefaultTask {
         checkExtensionParam()
 
         def tables = databaseFileParser.parseDatabaseFile(extension.databaseFile)
-
+        tables.forEach {
+            def clazz = kotlinClassGenerator.getKotlinClass(it)
+        }
     }
 
     def checkExtensionParam() {
@@ -73,8 +78,11 @@ class SqliteKtGenTask extends DefaultTask {
                     table.columns << column
                     column.name = col.name
                     column.ktField = col.ktField ?: col.name
-                    column.ktType = col.ktType ?: "String"
+                    column.ktType = col.ktType ?: 'String?'
+                    column.nullable = column.ktType.contains('?')
                     column.typeAppend = col.typeAppend ?: ""
+                    column.defaultValue = col.defaultValue ?: "null"
+
                     if (col.insertOrUpdate == null)
                         column.insertOrUpdate = true
                     else
@@ -83,49 +91,114 @@ class SqliteKtGenTask extends DefaultTask {
                         column.select = true
                     else
                         column.select = col.select
+
+                    if (!column.nullable && column.defaultValue == "null")
+                        throw new SqliteKtGenException("Column '$column.name': Nullable type required default value")
                 }
-                table.queries = tab.queries
+                table.queries = tab.queries ?: [] as HashMap
             }
             return tables
-        }
-
-        String isKtTypeAccepted(String ktType) {
-            try {
-                def type = Table.KtType.valueOf(ktType)
-                return type.name()
-            } catch (Exception ex) {
-                throw new SqliteKtGenException("Type ${ktType} not supported. Supported types : ${Table.KtType.values().toString()}")
-            }
         }
     }
 
     class KotlinClassGenerator {
 
-        def getKotlinClass(Table table) {
+        String getKotlinClass(Table table) {
             """
 package ${table.ktPackage}
 
-class ${table.ktClass} {
-${getFields(table.columns)}
+data class ${table.ktClass} (
+${getFields(table.columns)}) {
+
+${getCursorConstructor(table.columns)}
+
     companion object {
         const val TABLE_NAME = "${table.name}"
 ${getConstColumnName(table.columns)}
-${getConstQueries(table.queries)}
-${getFromCursor(table)}
+${getCreateTableQuery(table)}
+${getConstQueries(table.queries)}\
     }
+
+${getContentValue(table.columns)}
 }
 """
         }
 
-        def getFields(List<Table.Column> columns) {
+        def getContentValue(List<Column> columns) {
+            def strb = new StringBuilder(
+                    """\
+    val contentValue: ContentValue
+        get() {
+            val cv: ContentValue
+""")
+            columns.forEach {
+                if (it.nullable) {
+                    strb.append """\
+            if ($it.ktField == null) cv.putNull(${it.nameUpper()}) else cv.put(${it.nameUpper()}, $it.ktField)\n"""
+                } else {
+                    strb.append """\
+            cv.put(${it.nameUpper()}, $it.ktField)\n"""
+                }
+            }
+            strb.append """\
+            return cv
+        }"""
+        }
+
+        def getFields(List<Column> columns) {
             def strb = new StringBuilder()
             columns.forEach {
-                strb.append """\tvar ${it.ktField}: ${it.ktType}\n"""
+                strb.append """\tval ${it.ktField}: ${it.ktType} = """
+                if (it.ktType.contains("String") && it.defaultValue != "null")
+                    strb.append "\"${it.defaultValue}\""
+                else
+                    strb.append "${it.defaultValue}"
+                strb.append ',\n'
             }
+            strb.deleteCharAt(strb.lastIndexOf(','))
+            strb.deleteCharAt(strb.lastIndexOf('\n'))
             return strb.toString()
         }
 
-        def getConstColumnName(List<Table.Column> columns) {
+        def getCursorConstructor(ArrayList<Column> columns) {
+            def strb = new StringBuilder("\tconstructor (cursor: Cursor) {\n")
+            columns.forEach {
+                strb.append "\t\t${it.ktField} = ${getCursorGetValue(it)}\n"
+            }
+            strb.deleteCharAt(strb.lastIndexOf('\n'))
+            strb.append(')\n\t}')
+            return strb.toString()
+        }
+
+        def getCursorGetValue(Column col) {
+            switch (col.ktType) {
+                case 'String':
+                case 'String?':
+                case 'Short':
+                case 'Short?':
+                    return "cursor.getString(cursor.getColumnIndex(${col.nameUpper()}))"
+                case 'Int':
+                case 'Int?':
+                    return "cursor.getInt(cursor.getColumnIndex(${col.nameUpper()}))"
+                case 'Long':
+                case 'Long?':
+                    return "cursor.getLong(cursor.getColumnIndex(${col.nameUpper()}))"
+                case 'Float':
+                case 'Float?':
+                    return "cursor.getFloat(cursor.getColumnIndex(${col.nameUpper()}))"
+                case 'Double':
+                case 'Double?':
+                    return "cursor.getDouble(cursor.getColumnIndex(${col.nameUpper()}))"
+                case 'Boolean':
+                case 'Boolean?':
+                    return "cursor.getDouble(cursor.getColumnIndex(${col.nameUpper()}))"
+
+                default:
+                    throw SqliteKtGenException("cursor getCustomValue not implemented")
+            }
+        }
+
+        def getConstColumnName(List<Column> columns) {
             def strb = new StringBuilder()
             columns.forEach {
                 strb.append """\t\tconst val ${it.name.toUpperCase()} = "${it.name}"\n"""
@@ -133,25 +206,47 @@ ${getFromCursor(table)}
             return strb.toString()
         }
 
+        def getCreateTableQuery(Table table) {
+            def strb = new StringBuilder('\t\tconst val CREATE_TABLE = """').append("CREATE TABLE ${table.name} (\n")
+            table.columns.forEach {
+                strb.append "\t\t\t${it.name} ${getDbType(it)} ${it.typeAppend ?: ""},\n"
+            }
+            strb.deleteCharAt(strb.lastIndexOf(','))
+            strb.append('\t\t)"""\n')
+            return strb
+        }
+
+        def getDbType(Column col) {
+            switch (col.ktType) {
+                case 'String':
+                case 'String?':
+                case 'Short':
+                case 'Short?':
+                    return "TEXT"
+                case 'Int':
+                case 'Int?':
+                case 'Long':
+                case 'Long?':
+                    return "INTEGER"
+                case 'Float':
+                case 'Float?':
+                case 'Double':
+                case 'Double?':
+                    return "REAL"
+                case 'Boolean':
+                case 'Boolean?':
+                    return "BOOLEAN"
+
+                default:
+                    return col.dbType
+            }
+        }
+
         def getConstQueries(Map<String, String> queries) {
             def strb = new StringBuilder()
             queries.forEach { key, values ->
                 strb.append """\t\tconst val ${key.toUpperCase()} = "${values}"\n"""
             }
-            return strb.toString()
-        }
-
-        def getFromCursor(Table table) {
-            def strb = new StringBuilder("\t\tfun fromCursor(c: Cursor) {\n")
-            strb.append("\t\t\tval _entry = ${table.ktClass}()\n")
-            table.columns.forEach {
-                if (it.select) {
-                    strb.append "\t\t\t_entry.${it.ktField} = "
-                    strb.append "c.get${it.ktType}(c.getColumnIndex(${it.name.toUpperCase()}))\n"
-                }
-            }
-            strb.append("\t\t\treturn _entry\n")
-            strb.append("\t\t}\n")
             return strb.toString()
         }
     }
