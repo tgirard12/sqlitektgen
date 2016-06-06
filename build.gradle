@@ -1,6 +1,0 @@
-group 'com.tgirard12'
-version '1.0-SNAPSHOT'
-
-repositories {
-    mavenCentral()
-}
