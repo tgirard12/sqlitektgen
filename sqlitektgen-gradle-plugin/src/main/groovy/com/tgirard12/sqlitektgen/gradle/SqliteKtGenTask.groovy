@@ -83,7 +83,7 @@ class SqliteKtGenTask extends DefaultTask {
                     column.ktType = col.ktType ?: 'String?'
                     column.nullable = column.ktType.contains('?')
                     column.typeAppend = col.typeAppend ?: ""
-                    column.defaultValue = col.defaultValue == null ? "null" : col.defaultValue
+                    column.defaultValue = col.defaultValue
 
                     if (col.insertOrUpdate == null)
                         column.insertOrUpdate = true
@@ -93,9 +93,6 @@ class SqliteKtGenTask extends DefaultTask {
                         column.select = true
                     else
                         column.select = col.select
-
-                    if (!column.nullable && column.defaultValue == "null")
-                        throw new SqliteKtGenException("Column '$column.name': Nullable type required default value")
                 }
                 table.queries = tab.queries ?: [] as HashMap
             }
@@ -156,11 +153,17 @@ ${getContentValue(table.columns)}
         def getFields(List<Column> columns) {
             def strb = new StringBuilder()
             columns.forEach {
-                strb.append """\tval ${it.ktField}: ${it.ktType} = """
-                if (it.ktType.contains("String") && it.defaultValue != "null")
-                    strb.append "\"${it.defaultValue}\""
-                else
-                    strb.append "${it.defaultValue}"
+                strb.append """\tval ${it.ktField}: ${it.ktType}"""
+                if (it.defaultValue != null) {
+                    if (it.ktType.contains("String"))
+                        strb.append " = \"${it.defaultValue}\""
+                    else
+                        strb.append " = ${it.defaultValue}"
+                } else {
+                    if (it.nullable) {
+                        strb.append " = null"
+                    }
+                }
                 strb.append ',\n'
             }
             strb.deleteCharAt(strb.lastIndexOf(','))
@@ -218,7 +221,12 @@ ${getContentValue(table.columns)}
         def getCreateTableQuery(Table table) {
             def strb = new StringBuilder('\t\tconst val CREATE_TABLE = """').append("CREATE TABLE ${table.name} (\n")
             table.columns.forEach {
-                strb.append "\t\t\t${it.name} ${getDbType(it)} ${it.typeAppend ?: ""},\n"
+                strb.append "\t\t\t${it.name} ${getDbType(it)}"
+
+                if (!it.nullable)
+                    strb.append " NOT NULL"
+                strb.append " ${it.typeAppend ?: ""}"
+                strb.append(",\n")
             }
             strb.deleteCharAt(strb.lastIndexOf(','))
             strb.append('\t\t)"""\n')
