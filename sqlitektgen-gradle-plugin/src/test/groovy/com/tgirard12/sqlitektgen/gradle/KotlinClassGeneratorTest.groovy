@@ -31,8 +31,8 @@ public class KotlinClassGeneratorTest extends Specification {
     "columns":
         [ { "name": "string_null" },
           { "name": "string_not_null", "ktType": "String", "defaultValue": "" },
-          { "name": "column_2", "ktType": "Long?" },
-          { "name": "column_3", "ktType": "Float", "defaultValue": "0" } ]
+          { "name": "long_null", "ktType": "Long?" },
+          { "name": "float_default_value", "ktType": "Float", "defaultValue": "0" } ]
 } ]"""
         def table = parser.parseJsonContent(json)
         def generateClazz = classGenerator.getKotlinClass(table[0])
@@ -43,28 +43,28 @@ package com.tgirard12.sqlitektgen
 data class my_table (
     val string_null: String? = null,
     val string_not_null: String = "",
-    val column_2: Long? = null,
-    val column_3: Float = 0) {
+    val long_null: Long? = null,
+    val float_default_value: Float = 0) {
 
     constructor (cursor: Cursor) {
         string_null = cursor.getString(cursor.getColumnIndex(STRING_NULL))
         string_not_null = cursor.getString(cursor.getColumnIndex(STRING_NOT_NULL))
-        column_2 = cursor.getLong(cursor.getColumnIndex(COLUMN_2))
-        column_3 = cursor.getFloat(cursor.getColumnIndex(COLUMN_3)))
+        long_null = cursor.getLong(cursor.getColumnIndex(LONG_NULL))
+        float_default_value = cursor.getFloat(cursor.getColumnIndex(FLOAT_DEFAULT_VALUE)))
     }
 
     companion object {
         const val TABLE_NAME = "my_table"
         const val STRING_NULL = "string_null"
         const val STRING_NOT_NULL = "string_not_null"
-        const val COLUMN_2 = "column_2"
-        const val COLUMN_3 = "column_3"
+        const val LONG_NULL = "long_null"
+        const val FLOAT_DEFAULT_VALUE = "float_default_value"
 
         const val CREATE_TABLE = \"\"\"CREATE TABLE my_table (
             string_null TEXT ,
             string_not_null TEXT ,
-            column_2 INTEGER ,
-            column_3 REAL \n        )\"\"\"
+            long_null INTEGER ,
+            float_default_value REAL \n        )\"\"\"
 
     }
 
@@ -73,8 +73,8 @@ data class my_table (
             val cv: ContentValue
             if (string_null == null) cv.putNull(STRING_NULL) else cv.put(STRING_NULL, string_null)
             cv.put(STRING_NOT_NULL, string_not_null)
-            if (column_2 == null) cv.putNull(COLUMN_2) else cv.put(COLUMN_2, column_2)
-            cv.put(COLUMN_3, column_3)
+            if (long_null == null) cv.putNull(LONG_NULL) else cv.put(LONG_NULL, long_null)
+            cv.put(FLOAT_DEFAULT_VALUE, float_default_value)
             return cv
         }
 }
