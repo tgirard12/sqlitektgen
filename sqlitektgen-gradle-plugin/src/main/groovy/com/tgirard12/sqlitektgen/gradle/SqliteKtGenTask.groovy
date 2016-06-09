@@ -207,7 +207,7 @@ ${getContentValue(table.columns)}
                     return "cursor.getDouble(cursor.getColumnIndex(${col.nameUpper()}))"
                 case 'Boolean':
                 case 'Boolean?':
-                    return "cursor.getDouble(cursor.getColumnIndex(${col.nameUpper()}))"
+                    return "cursor.getInt(cursor.getColumnIndex(${col.nameUpper()})) > 0"
 
                 default:
                     throw SqliteKtGenException("cursor getCustomValue not implemented")

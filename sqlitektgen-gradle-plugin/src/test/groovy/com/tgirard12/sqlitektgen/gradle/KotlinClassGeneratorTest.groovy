@@ -34,6 +34,7 @@ public class KotlinClassGeneratorTest extends Specification {
                 "insertOrUpdate": false,        "select": false,   },
           { "name": "string_not_null",      "ktType": "String"                          },
           { "name": "string_defaultValue",  "ktType": "String", "defaultValue": "OK"    },
+          { "name": "boolean_null",         "ktType": "Boolean?"                         },
           { "name": "long_null",            "ktType": "Long?"                           },
           { "name": "float_default_value",  "ktType": "Float",  "defaultValue": "0"     },
           { "name": "int_no_insert_pk",     "ktType": "Int",    "defaultValue": "-1",
@@ -53,6 +54,7 @@ data class my_table (
     val date_no_db: java.util.Date? = null,
     val string_not_null: String,
     val string_defaultValue: String = "OK",
+    val boolean_null: Boolean? = null,
     val long_null: Long? = null,
     val float_default_value: Float = 0,
     val int_no_insert_pk: Int = -1) {
@@ -61,6 +63,7 @@ data class my_table (
         string_null = cursor.getString(cursor.getColumnIndex(STRING_NULL)),
         string_not_null = cursor.getString(cursor.getColumnIndex(STRING_NOT_NULL)),
         string_defaultValue = cursor.getString(cursor.getColumnIndex(STRING_DEFAULTVALUE)),
+        boolean_null = cursor.getInt(cursor.getColumnIndex(BOOLEAN_NULL)) > 0,
         long_null = cursor.getLong(cursor.getColumnIndex(LONG_NULL)),
         float_default_value = cursor.getFloat(cursor.getColumnIndex(FLOAT_DEFAULT_VALUE)),
         int_no_insert_pk = cursor.getInt(cursor.getColumnIndex(INT_NO_INSERT_PK)))
@@ -70,6 +73,7 @@ data class my_table (
         const val STRING_NULL = "string_null"
         const val STRING_NOT_NULL = "string_not_null"
         const val STRING_DEFAULTVALUE = "string_defaultValue"
+        const val BOOLEAN_NULL = "boolean_null"
         const val LONG_NULL = "long_null"
         const val FLOAT_DEFAULT_VALUE = "float_default_value"
         const val INT_NO_INSERT_PK = "int_no_insert_pk"
@@ -78,6 +82,7 @@ data class my_table (
             string_null TEXT ,
             string_not_null TEXT NOT NULL ,
             string_defaultValue TEXT NOT NULL ,
+            boolean_null BOOLEAN ,
             long_null INTEGER ,
             float_default_value REAL NOT NULL ,
             int_no_insert_pk INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT\n        )\"\"\"
@@ -90,6 +95,7 @@ data class my_table (
             if (string_null == null) cv.putNull(STRING_NULL) else cv.put(STRING_NULL, string_null)
             cv.put(STRING_NOT_NULL, string_not_null)
             cv.put(STRING_DEFAULTVALUE, string_defaultValue)
+            if (boolean_null == null) cv.putNull(BOOLEAN_NULL) else cv.put(BOOLEAN_NULL, boolean_null)
             if (long_null == null) cv.putNull(LONG_NULL) else cv.put(LONG_NULL, long_null)
             cv.put(FLOAT_DEFAULT_VALUE, float_default_value)
             return cv
