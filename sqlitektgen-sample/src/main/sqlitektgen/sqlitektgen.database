@@ -1,0 +1,67 @@
+[
+  {
+    "table": "UserDb",
+    "ktClass": "UserDb",
+    "ktPackage": "com.tgirard12.sqlitektgen.sample",
+    "columns": [
+      {
+        "name": "_id",
+        "ktType": "Long",
+        "defaultValue": -1,
+        "insertOrUpdate": false,
+        "typeAppend": "NOT NULL PRIMARY KEY AUTOINCREMENT"
+      },
+      {
+        "name": "name",
+        "ktType": "String"
+      },
+      {
+        "name": "email",
+        "ktType": "String?",
+        "defaultValue": ""
+      },
+      {
+        "name": "createdAt",
+        "ktType": "Long"
+      },
+      {
+        "name": "groupId",
+        "ktType": "Long?"
+      },
+      {
+        "name": "groups",
+        "ktType": "GroupDb?",
+        "insertOrUpdate": false,
+        "select": false
+      }
+    ],
+    "queries": {
+    }
+  },
+  {
+    "table": "GroupDb",
+    "ktClass": "GroupDb",
+    "ktPackage": "com.tgirard12.sqlitektgen.sample",
+    "columns": [
+      {
+        "name": "_id",
+        "ktType": "Long",
+        "defaultValue": -1,
+        "insertOrUpdate": false,
+        "typeAppend": "NOT NULL PRIMARY KEY AUTOINCREMENT"
+      },
+      {
+        "name": "name",
+        "ktType": "String"
+      },
+      {
+        "name": "users",
+        "ktType": "List<UserDb>?",
+        "insertOrUpdate": false,
+        "select": false
+      }
+    ],
+    "queries": {
+    }
+  }
+]
