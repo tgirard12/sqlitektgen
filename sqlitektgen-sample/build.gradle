@@ -1,26 +1,48 @@
-group 'com.tgirard12'
-version '1.0-SNAPSHOT'
-
 buildscript {
     repositories {
-        mavenCentral()
-        flatDir {
-            dirs '../sqlitektgen-gradle-plugin/build/libs'
-        }
+        mavenLocal()
+        jcenter()
     }
     dependencies {
-        classpath 'com.tgirard12:sqlitektgen:1.0-SNAPSHOT'
+        classpath 'com.android.tools.build:gradle:2.2.0'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.4'
+        classpath 'com.tgirard12:sqlitektgen:1.1.1'
     }
 }
 
-apply plugin: 'groovy'
-apply plugin: 'com.tgirard12.sqlitektgen'
-//apply plugin: 'sqlitektgen'
-
-
 repositories {
-    mavenCentral()
+    mavenLocal()
+    jcenter()
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "24.0.2"
+
+    defaultConfig {
+        applicationId "com.tgirard12.sqlitektgen.sample"
+        minSdkVersion 19
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
 }
 
 dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:1.0.4"
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:design:24.2.1'
+
+    testCompile 'junit:junit:4.12'
 }

@@ -1,4 +1,4 @@
 rootProject.name = 'sqlitektgen'
 include 'sqlitektgen-gradle-plugin'
-include 'sqlitektgen-sample'
+include ':sqlitektgen-sample'
 
