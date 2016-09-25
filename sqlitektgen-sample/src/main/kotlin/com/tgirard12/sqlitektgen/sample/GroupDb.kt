@@ -1,25 +1,26 @@
+
 package com.tgirard12.sqlitektgen.sample
 
 import android.content.ContentValues
 import android.database.Cursor
 
-data class GroupDb(
-        val _id: Long = -1,
-        val name: String,
-        val users: List<UserDb>? = null) {
+data class GroupDb (
+    val groupId: Long = -1,
+    val groupNname: String,
+    val users: List<UserDb>? = null) {
 
     constructor (cursor: Cursor) : this(
-            _id = cursor.getLong(cursor.getColumnIndex(_ID)),
-            name = cursor.getString(cursor.getColumnIndex(NAME)))
+        groupId = cursor.getLong(cursor.getColumnIndex(GROUPID)),
+        groupNname = cursor.getString(cursor.getColumnIndex(GROUPNNAME)))
 
     companion object {
         const val TABLE_NAME = "GroupDb"
-        const val _ID = "_id"
-        const val NAME = "name"
+        const val GROUPID = "groupId"
+        const val GROUPNNAME = "groupNname"
 
         const val CREATE_TABLE = """CREATE TABLE GroupDb (
-            _id INTEGER NOT NULL NOT NULL PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL 
+            groupId INTEGER NOT NULL NOT NULL PRIMARY KEY AUTOINCREMENT,
+            groupNname TEXT NOT NULL 
         )"""
 
     }
@@ -27,7 +28,7 @@ data class GroupDb(
     val contentValue: ContentValues
         get() {
             val cv = ContentValues()
-            cv.put(NAME, name)
+            cv.put(GROUPNNAME, groupNname)
             return cv
         }
 }
