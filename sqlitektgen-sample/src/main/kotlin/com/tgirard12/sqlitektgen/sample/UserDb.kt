@@ -1,22 +1,23 @@
+
 package com.tgirard12.sqlitektgen.sample
 
 import android.content.ContentValues
 import android.database.Cursor
 
-data class UserDb(
+data class UserDb (
         val _id: Long = -1,
         val name: String,
         val email: String? = "",
         val createdAt: Long,
         val groupId: Long? = null,
-        val groups: GroupDb? = null) {
+        val group: GroupDb? = null) {
 
     constructor (cursor: Cursor) : this(
-            _id = cursor.getLong(cursor.getColumnIndex(_ID)),
-            name = cursor.getString(cursor.getColumnIndex(NAME)),
-            email = cursor.getString(cursor.getColumnIndex(EMAIL)),
-            createdAt = cursor.getLong(cursor.getColumnIndex(CREATEDAT)),
-            groupId = cursor.getLong(cursor.getColumnIndex(GROUPID)))
+        _id = cursor.getLong(cursor.getColumnIndex(_ID)),
+        name = cursor.getString(cursor.getColumnIndex(NAME)),
+        email = cursor.getString(cursor.getColumnIndex(EMAIL)),
+        createdAt = cursor.getLong(cursor.getColumnIndex(CREATEDAT)),
+        groupId = cursor.getLong(cursor.getColumnIndex(GROUPID)))
 
     companion object {
         const val TABLE_NAME = "UserDb"
@@ -34,6 +35,7 @@ data class UserDb(
             groupId INTEGER 
         )"""
 
+        const val SELECT_ALL_ORDER_BY_NAME = "select * from UserDb left join GroupDb on UserDb.groupId = GroupDb.groupId order by UserDb.name"
     }
 
     val contentValue: ContentValues

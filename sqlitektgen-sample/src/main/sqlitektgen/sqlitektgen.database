@@ -1,65 +1,24 @@
 [
   {
-    "table": "UserDb",
-    "ktClass": "UserDb",
-    "ktPackage": "com.tgirard12.sqlitektgen.sample",
+    "table": "UserDb",        "ktClass": "UserDb",    "ktPackage": "com.tgirard12.sqlitektgen.sample",
     "columns": [
-      {
-        "name": "_id",
-        "ktType": "Long",
-        "defaultValue": -1,
-        "insertOrUpdate": false,
-        "typeAppend": "NOT NULL PRIMARY KEY AUTOINCREMENT"
-      },
-      {
-        "name": "name",
-        "ktType": "String"
-      },
-      {
-        "name": "email",
-        "ktType": "String?",
-        "defaultValue": ""
-      },
-      {
-        "name": "createdAt",
-        "ktType": "Long"
-      },
-      {
-        "name": "groupId",
-        "ktType": "Long?"
-      },
-      {
-        "name": "groups",
-        "ktType": "GroupDb?",
-        "insertOrUpdate": false,
-        "select": false
-      }
+      { "name": "_id",       "ktType": "Long",       "defaultValue": -1,  "insertOrUpdate": false,   "typeAppend": "NOT NULL PRIMARY KEY AUTOINCREMENT"      },
+      { "name": "name",      "ktType": "String"         },
+      { "name": "email",     "ktType": "String?",     "defaultValue": ""      },
+      { "name": "createdAt", "ktType": "Long"           },
+      { "name": "groupId",   "ktType": "Long?"          },
+      { "name": "group",    "ktType": "GroupDb?",    "insertOrUpdate": false,  "select": false      }
     ],
     "queries": {
+      "SELECT_ALL_ORDER_BY_NAME": "select * from UserDb left join GroupDb on UserDb.groupId = GroupDb.groupId order by UserDb.name"
     }
   },
   {
-    "table": "GroupDb",
-    "ktClass": "GroupDb",
-    "ktPackage": "com.tgirard12.sqlitektgen.sample",
+    "table": "GroupDb",        "ktClass": "GroupDb",       "ktPackage": "com.tgirard12.sqlitektgen.sample",
     "columns": [
-      {
-        "name": "_id",
-        "ktType": "Long",
-        "defaultValue": -1,
-        "insertOrUpdate": false,
-        "typeAppend": "NOT NULL PRIMARY KEY AUTOINCREMENT"
-      },
-      {
-        "name": "name",
-        "ktType": "String"
-      },
-      {
-        "name": "users",
-        "ktType": "List<UserDb>?",
-        "insertOrUpdate": false,
-        "select": false
-      }
+      { "name": "groupId",     "ktType": "Long",       "defaultValue": -1,  "insertOrUpdate": false,   "typeAppend": "NOT NULL PRIMARY KEY AUTOINCREMENT"      },
+      { "name": "groupNname",  "ktType": "String"            },
+      { "name": "users",       "ktType": "List<UserDb>?",  "insertOrUpdate": false,      "select": false      }
     ],
     "queries": {
     }
