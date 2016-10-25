@@ -15,8 +15,8 @@ class Table {
     List<Column> columns = []
     Map<String, String> queries = new HashMap<>()
 
-    @EqualsAndHashCode
     @ToString
+    @EqualsAndHashCode
     static class Column {
         String name
         String ktField
