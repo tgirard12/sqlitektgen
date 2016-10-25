@@ -49,24 +49,24 @@ package com.tgirard12.sqlitektgen
 import android.content.ContentValues
 import android.database.Cursor
 
-data class my_table (
-    val string_null: String? = null,
-    val date_no_db: java.util.Date? = null,
-    val string_not_null: String,
-    val string_defaultValue: String = "OK",
-    val boolean_null: Boolean? = null,
-    val long_null: Long? = null,
-    val float_default_value: Float = 0,
-    val int_no_insert_pk: Int = -1) {
+data class my_table(
+        val string_null: String? = null,
+        val date_no_db: java.util.Date? = null,
+        val string_not_null: String,
+        val string_defaultValue: String = "OK",
+        val boolean_null: Boolean? = null,
+        val long_null: Long? = null,
+        val float_default_value: Float = 0,
+        val int_no_insert_pk: Int = -1) {
 
     constructor (cursor: Cursor) : this(
-        string_null = if (cursor.isNull(cursor.getColumnIndex(STRING_NULL))) null else cursor.getString(cursor.getColumnIndex(STRING_NULL)),
-        string_not_null = cursor.getString(cursor.getColumnIndex(STRING_NOT_NULL)),
-        string_defaultValue = cursor.getString(cursor.getColumnIndex(STRING_DEFAULTVALUE)),
-        boolean_null = if (cursor.isNull(cursor.getColumnIndex(BOOLEAN_NULL))) null else cursor.getInt(cursor.getColumnIndex(BOOLEAN_NULL)) > 0,
-        long_null = if (cursor.isNull(cursor.getColumnIndex(LONG_NULL))) null else cursor.getLong(cursor.getColumnIndex(LONG_NULL)),
-        float_default_value = cursor.getFloat(cursor.getColumnIndex(FLOAT_DEFAULT_VALUE)),
-        int_no_insert_pk = cursor.getInt(cursor.getColumnIndex(INT_NO_INSERT_PK)))
+            string_null = if (cursor.isNull(cursor.getColumnIndex(STRING_NULL))) null else cursor.getString(cursor.getColumnIndex(STRING_NULL)),
+            string_not_null = cursor.getString(cursor.getColumnIndex(STRING_NOT_NULL)),
+            string_defaultValue = cursor.getString(cursor.getColumnIndex(STRING_DEFAULTVALUE)),
+            boolean_null = if (cursor.isNull(cursor.getColumnIndex(BOOLEAN_NULL))) null else cursor.getInt(cursor.getColumnIndex(BOOLEAN_NULL)) > 0,
+            long_null = if (cursor.isNull(cursor.getColumnIndex(LONG_NULL))) null else cursor.getLong(cursor.getColumnIndex(LONG_NULL)),
+            float_default_value = cursor.getFloat(cursor.getColumnIndex(FLOAT_DEFAULT_VALUE)),
+            int_no_insert_pk = cursor.getInt(cursor.getColumnIndex(INT_NO_INSERT_PK)))
 
     companion object {
         const val TABLE_NAME = "my_table"
