@@ -60,11 +60,11 @@ data class my_table (
     val int_no_insert_pk: Int = -1) {
 
     constructor (cursor: Cursor) : this(
-        string_null = cursor.getString(cursor.getColumnIndex(STRING_NULL)),
+        string_null = if (cursor.isNull(cursor.getColumnIndex(STRING_NULL))) null else cursor.getString(cursor.getColumnIndex(STRING_NULL)),
         string_not_null = cursor.getString(cursor.getColumnIndex(STRING_NOT_NULL)),
         string_defaultValue = cursor.getString(cursor.getColumnIndex(STRING_DEFAULTVALUE)),
-        boolean_null = cursor.getInt(cursor.getColumnIndex(BOOLEAN_NULL)) > 0,
-        long_null = cursor.getLong(cursor.getColumnIndex(LONG_NULL)),
+        boolean_null = if (cursor.isNull(cursor.getColumnIndex(BOOLEAN_NULL))) null else cursor.getInt(cursor.getColumnIndex(BOOLEAN_NULL)) > 0,
+        long_null = if (cursor.isNull(cursor.getColumnIndex(LONG_NULL))) null else cursor.getLong(cursor.getColumnIndex(LONG_NULL)),
         float_default_value = cursor.getFloat(cursor.getColumnIndex(FLOAT_DEFAULT_VALUE)),
         int_no_insert_pk = cursor.getInt(cursor.getColumnIndex(INT_NO_INSERT_PK)))
 
@@ -106,65 +106,3 @@ data class my_table (
         assert generateClazz.expand(4) == kotlinclass
     }
 }
-//    String name
-//    String ktField
-//    String ktType
-//    String typeAppend
-//    Boolean insertOrUpdate
-//    Boolean select
-//    String defaultValue
-
-//    def 'test full json to kotlin class'() {
-//        when:
-//        def json = """
-//[ {
-//    "table": "my_table", "ktClass": "MyTable", "ktPackage": "com.tgirard12.sqlitektgen",
-//    "columns":
-//        [ { "name": "stringNull" },
-//          { "name": "string_not_null", "ktField": "stringNotNull", "ktType": "String", "defaultValue": "sqlitektgen" },
-//          { "name": "intNull", "ktType": "Int?" },
-//          { "name": "long_not_null", "ktField": "longNotNull", "ktType": "Long", "defaultValue": "-1" }
-//           ]
-//} ]"""
-//        def table = parser.parseJsonContent(json)
-//        def generateClazz = classGenerator.getKotlinClass(table[0])
-//
-//        def kotlinclass = """
-//package com.tgirard12.sqlitektgen
-//
-//data class MyTable (
-//    val stringNull: String? = null,
-//    val stringNotNull: String = "sqlitektgen",
-//    val intNull: Int? = null,
-//    val longNotNull: Long = -1
-//) {
-//
-//    companion object {
-//        const val TABLE_NAME = "my_table"
-//        const val STRINGNULL = "stringNull"
-//        const val STRING_NOT_NULL = "string_not_null"
-//        const val INTNULL = "intNull"
-//        const val LONG_NOT_NULL = "long_not_null"
-//
-//        const val CREATE_TABLE = \"\"\"CREATE TABLE my_table (
-//            stringNull TEXT ,
-//            string_not_null TEXT ,
-//            intNull INTEGER ,
-//            long_not_null INTEGER \n        )\"\"\"
-//
-//
-//        fun fromCursor(cursor: Cursor) {
-//            return MyTable(
-//                stringNull = cursor.getString(cursor.getColumnIndex(STRINGNULL)),
-//                stringNotNull = cursor.getString(cursor.getColumnIndex(STRING_NOT_NULL)),
-//                intNull = cursor.getInt(cursor.getColumnIndex(INTNULL)),
-//                longNotNull = cursor.getLong(cursor.getColumnIndex(LONG_NOT_NULL)))
-//        }
-//
-//    }
-//}
-//"""
-//        then:
-//        assert generateClazz.expand(4) == kotlinclass
-//    }
-//}

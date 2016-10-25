@@ -76,7 +76,7 @@ class SqliteKtGenTask extends DefaultTask {
                     if (col.name == null)
                         throw new SqliteKtGenException("'columns.name' field required")
 
-                    def column = new Table.Column()
+                    def column = new Column()
                     table.columns << column
                     column.name = col.name
                     column.ktField = col.ktField ?: col.name
@@ -187,31 +187,45 @@ ${getContentValue(table.columns)}
         }
 
         def getCursorGetValue(Column col) {
+            def getFunctionType
+            def functionAppender = ""
             switch (col.ktType) {
                 case 'String':
                 case 'String?':
                 case 'Short':
                 case 'Short?':
-                    return "cursor.getString(cursor.getColumnIndex(${col.nameUpper()}))"
+                    getFunctionType = "getString"
+                    break
                 case 'Int':
                 case 'Int?':
-                    return "cursor.getInt(cursor.getColumnIndex(${col.nameUpper()}))"
+                    getFunctionType = "getInt"
+                    break
                 case 'Long':
                 case 'Long?':
-                    return "cursor.getLong(cursor.getColumnIndex(${col.nameUpper()}))"
+                    getFunctionType = "getLong"
+                    break
                 case 'Float':
                 case 'Float?':
-                    return "cursor.getFloat(cursor.getColumnIndex(${col.nameUpper()}))"
+                    getFunctionType = "getFloat"
+                    break
                 case 'Double':
                 case 'Double?':
-                    return "cursor.getDouble(cursor.getColumnIndex(${col.nameUpper()}))"
+                    getFunctionType = "getDouble"
+                    break
                 case 'Boolean':
                 case 'Boolean?':
-                    return "cursor.getInt(cursor.getColumnIndex(${col.nameUpper()})) > 0"
+                    getFunctionType = "getInt"
+                    functionAppender = " > 0"
+                    break
 
                 default:
-                    throw SqliteKtGenException("cursor getCustomValue not implemented")
+                    throw new SqliteKtGenException("cursor getCustomValue not implemented")
             }
+            def res = ""
+            if (col.isNullable())
+                res = "if (cursor.isNull(cursor.getColumnIndex(${col.nameUpper()}))) null else "
+            res += "cursor.$getFunctionType(cursor.getColumnIndex(${col.nameUpper()}))$functionAppender"
+            return res
         }
 
         def getConstColumnName(List<Column> columns) {
