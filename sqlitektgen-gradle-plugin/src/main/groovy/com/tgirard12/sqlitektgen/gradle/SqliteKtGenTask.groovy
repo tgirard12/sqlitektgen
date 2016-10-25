@@ -110,7 +110,7 @@ package ${table.ktPackage}
 import android.content.ContentValues
 import android.database.Cursor
 
-data class ${table.ktClass} (
+data class ${table.ktClass}(
 ${getFields(table.columns)}) {
 
 ${getCursorConstructor(table.columns)}
@@ -156,7 +156,7 @@ ${getContentValue(table.columns)}
         def getFields(List<Column> columns) {
             def strb = new StringBuilder()
             columns.forEach {
-                strb.append """\tval ${it.ktField}: ${it.ktType}"""
+                strb.append """\t\tval ${it.ktField}: ${it.ktType}"""
                 if (it.defaultValue != null) {
                     if (it.ktType.contains("String"))
                         strb.append " = \"${it.defaultValue}\""
@@ -178,7 +178,7 @@ ${getContentValue(table.columns)}
             def strb = new StringBuilder("\tconstructor (cursor: Cursor) : this(\n")
             columns.forEach {
                 if (it.isInTable)
-                    strb.append "\t\t${it.ktField} = ${getCursorGetValue(it)},\n"
+                    strb.append "\t\t\t${it.ktField} = ${getCursorGetValue(it)},\n"
             }
             strb.deleteCharAt(strb.lastIndexOf(','))
             strb.deleteCharAt(strb.lastIndexOf('\n'))
