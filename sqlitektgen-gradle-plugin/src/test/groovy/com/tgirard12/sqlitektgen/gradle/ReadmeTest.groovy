@@ -67,9 +67,9 @@ data class User(
         const val AGE = "age"
 
         const val CREATE_TABLE = \"\"\"CREATE TABLE User (
-                _id INTEGER NOT NULL NOT NULL PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL ,
-                age INTEGER
+            _id INTEGER NOT NULL NOT NULL PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL ,
+            age INTEGER
         )\"\"\"
 
         const val COUNT_ALL = "select count(_id) from User"

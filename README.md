@@ -37,6 +37,11 @@ This is a minimalist database file for one table :
 The gradle `generateSqliteKtClasses` Task generate this kotlin data class : 
 
 ````kotlin
+package com.tgirard12.sqlitektgen.sample
+
+import android.content.ContentValues
+import android.database.Cursor
+
 data class User(
         val _id: Long = -1,
         val name: String,
@@ -54,9 +59,9 @@ data class User(
         const val AGE = "age"
 
         const val CREATE_TABLE = """CREATE TABLE User (
-                _id INTEGER NOT NULL NOT NULL PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL ,
-                age INTEGER
+            _id INTEGER NOT NULL NOT NULL PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL ,
+            age INTEGER 
         )"""
 
         const val COUNT_ALL = "select count(_id) from User"
