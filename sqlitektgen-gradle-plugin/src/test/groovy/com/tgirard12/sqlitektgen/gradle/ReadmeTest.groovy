@@ -69,11 +69,11 @@ data class User(
         const val CREATE_TABLE = \"\"\"CREATE TABLE User (
             _id INTEGER NOT NULL NOT NULL PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL ,
-            age INTEGER
-        )\"\"\"
+            age INTEGER \n        )\"\"\"
 
         const val COUNT_ALL = "select count(_id) from User"
         const val SELECT_BY_NAME = "select * from User where name=?"
+
     }
 
     val contentValue: ContentValues
