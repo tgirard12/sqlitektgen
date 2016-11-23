@@ -14,6 +14,7 @@ class Table {
 
     List<Column> columns = []
     Map<String, String> queries = new HashMap<>()
+    Map<String, String> selectBy = new HashMap<>()
 
     @ToString
     @EqualsAndHashCode

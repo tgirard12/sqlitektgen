@@ -96,6 +96,7 @@ class SqliteKtGenTask extends DefaultTask {
                     column.isInTable = column.select | column.insertOrUpdate
                 }
                 table.queries = tab.queries ?: [] as HashMap
+                table.selectBy = tab.selectBy?: [] as HashMap
             }
             return tables
         }
@@ -119,7 +120,8 @@ ${getCursorConstructor(table.columns)}
         const val TABLE_NAME = "${table.name}"
 ${getConstColumnName(table.columns)}
 ${getCreateTableQuery(table)}
-${getConstQueries(table.queries)}\
+${getConstQueries(table.queries)}
+${getConstSelectBy(table.name, table.selectBy)}\
     }
 
 ${getContentValue(table.columns)}
@@ -284,6 +286,14 @@ ${getContentValue(table.columns)}
             def strb = new StringBuilder()
             queries.forEach { key, values ->
                 strb.append """\t\tconst val ${key.toUpperCase()} = "${values}"\n"""
+            }
+            return strb.toString()
+        }
+        def getConstSelectBy(String table, Map<String, String> selectBy) {
+            def strb = new StringBuilder()
+            selectBy.forEach { key, values ->
+                def split = values.split(",").collect { "$it=?"}
+                strb.append """\t\tconst val ${key.toUpperCase()} = "SELECT * FROM $table WHERE ${split.join(" AND ")}"\n"""
             }
             return strb.toString()
         }

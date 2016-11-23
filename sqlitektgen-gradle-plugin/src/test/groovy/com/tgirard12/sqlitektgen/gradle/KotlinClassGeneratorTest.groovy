@@ -38,7 +38,11 @@ public class KotlinClassGeneratorTest extends Specification {
           { "name": "long_null",            "ktType": "Long?"                           },
           { "name": "float_default_value",  "ktType": "Float",  "defaultValue": "0"     },
           { "name": "int_no_insert_pk",     "ktType": "Int",    "defaultValue": "-1",
-                "insertOrUpdate": false,  "typeAppend": "PRIMARY KEY AUTOINCREMENT"     } ]
+                "insertOrUpdate": false,  "typeAppend": "PRIMARY KEY AUTOINCREMENT"     } ],
+    "queries": {
+      "COUNT_ALL": "select count(_id) from User",
+      "SELECT_BY_NAME": "select * from User where name=?"
+    }
 } ]"""
         def table = parser.parseJsonContent(json)
         def generateClazz = classGenerator.getKotlinClass(table[0])
@@ -87,6 +91,9 @@ data class my_table(
             float_default_value REAL NOT NULL ,
             int_no_insert_pk INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT\n        )\"\"\"
 
+        const val COUNT_ALL = "select count(_id) from User"
+        const val SELECT_BY_NAME = "select * from User where name=?"
+
     }
 
     val contentValue: ContentValues
@@ -98,6 +105,64 @@ data class my_table(
             if (boolean_null == null) cv.putNull(BOOLEAN_NULL) else cv.put(BOOLEAN_NULL, boolean_null)
             if (long_null == null) cv.putNull(LONG_NULL) else cv.put(LONG_NULL, long_null)
             cv.put(FLOAT_DEFAULT_VALUE, float_default_value)
+            return cv
+        }
+}
+"""
+        then:
+        assert generateClazz.expand(4) == kotlinclass
+    }
+
+    def 'test Select querie'() {
+        when:
+        def json = """
+[ {
+    "table": "my_table", "ktPackage": "com.tgirard12.sqlitektgen",
+    "columns":
+        [ { "name": "string_null" },
+          { "name": "str", "ktType": "String" }
+        ],
+    "selectBy": {
+       "SELECT_BY_1_COL": "string_null",
+       "SELECT_BY_2_COL": "string_null,str"
+    }
+} ]"""
+        def table = parser.parseJsonContent(json)
+        def generateClazz = classGenerator.getKotlinClass(table[0])
+
+        def kotlinclass = """
+package com.tgirard12.sqlitektgen
+
+import android.content.ContentValues
+import android.database.Cursor
+
+data class my_table(
+        val string_null: String? = null,
+        val str: String) {
+
+    constructor (cursor: Cursor) : this(
+            string_null = if (cursor.isNull(cursor.getColumnIndex(STRING_NULL))) null else cursor.getString(cursor.getColumnIndex(STRING_NULL)),
+            str = cursor.getString(cursor.getColumnIndex(STR)))
+
+    companion object {
+        const val TABLE_NAME = "my_table"
+        const val STRING_NULL = "string_null"
+        const val STR = "str"
+
+        const val CREATE_TABLE = \"\"\"CREATE TABLE my_table (
+            string_null TEXT ,
+            str TEXT NOT NULL \n        )\"\"\"
+
+
+        const val SELECT_BY_1_COL = "SELECT * FROM my_table WHERE string_null=?"
+        const val SELECT_BY_2_COL = "SELECT * FROM my_table WHERE string_null=? AND str=?"
+    }
+
+    val contentValue: ContentValues
+        get() {
+            val cv = ContentValues()
+            if (string_null == null) cv.putNull(STRING_NULL) else cv.put(STRING_NULL, string_null)
+            cv.put(STR, str)
             return cv
         }
 }
