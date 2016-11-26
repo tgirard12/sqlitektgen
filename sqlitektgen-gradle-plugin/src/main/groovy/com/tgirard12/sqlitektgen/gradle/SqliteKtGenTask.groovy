@@ -96,7 +96,7 @@ class SqliteKtGenTask extends DefaultTask {
                     column.isInTable = column.select | column.insertOrUpdate
                 }
                 table.queries = tab.queries ?: [] as HashMap
-                table.selectBy = tab.selectBy?: [] as HashMap
+                table.selectBy = tab.selectBy ?: [] as HashMap
             }
             return tables
         }
@@ -118,10 +118,10 @@ ${getCursorConstructor(table.columns)}
 
     companion object {
         const val TABLE_NAME = "${table.name}"
-${getConstColumnName(table.columns)}
+${getConstColumnName(table.name, table.columns)}
 ${getCreateTableQuery(table)}
-${getConstQueries(table.queries)}
-${getConstSelectBy(table.name, table.selectBy)}\
+${getConstQueries(table.queries)}\
+${getConstSelectBy(table, table.selectBy)}\
     }
 
 ${getContentValue(table.columns)}
@@ -230,11 +230,11 @@ ${getContentValue(table.columns)}
             return res
         }
 
-        def getConstColumnName(List<Column> columns) {
+        def getConstColumnName(String table, List<Column> columns) {
             def strb = new StringBuilder()
             columns.forEach {
                 if (it.isInTable)
-                    strb.append """\t\tconst val ${it.name.toUpperCase()} = "${it.name}"\n"""
+                    strb.append """\t\tconst val ${it.name.toUpperCase()} = \"${it.columnNameFull(table)}\"\n"""
             }
             return strb.toString()
         }
@@ -289,11 +289,19 @@ ${getContentValue(table.columns)}
             }
             return strb.toString()
         }
-        def getConstSelectBy(String table, Map<String, String> selectBy) {
+
+        def getConstSelectBy(Table table, Map<String, String> selectBy) {
             def strb = new StringBuilder()
             selectBy.forEach { key, values ->
-                def split = values.split(",").collect { "$it=?"}
-                strb.append """\t\tconst val ${key.toUpperCase()} = "SELECT * FROM $table WHERE ${split.join(" AND ")}"\n"""
+                def split = values.split(",").collect { val ->
+                    def column = table.columns.find {
+                        it.name == val
+                    }
+                    if (column == null)
+                        throw new SqliteKtGenException("Select query param $key not found")
+                    column.columnNameFull(table.name) + "=?"
+                }
+                strb.append """\t\tconst val ${key.toUpperCase()} = "SELECT * FROM ${table.name} WHERE ${split.join(" AND ")}"\n"""
             }
             return strb.toString()
         }
