@@ -74,13 +74,13 @@ data class my_table(
 
     companion object {
         const val TABLE_NAME = "my_table"
-        const val STRING_NULL = "string_null"
-        const val STRING_NOT_NULL = "string_not_null"
-        const val STRING_DEFAULTVALUE = "string_defaultValue"
-        const val BOOLEAN_NULL = "boolean_null"
-        const val LONG_NULL = "long_null"
-        const val FLOAT_DEFAULT_VALUE = "float_default_value"
-        const val INT_NO_INSERT_PK = "int_no_insert_pk"
+        const val STRING_NULL = "my_table.string_null"
+        const val STRING_NOT_NULL = "my_table.string_not_null"
+        const val STRING_DEFAULTVALUE = "my_table.string_defaultValue"
+        const val BOOLEAN_NULL = "my_table.boolean_null"
+        const val LONG_NULL = "my_table.long_null"
+        const val FLOAT_DEFAULT_VALUE = "my_table.float_default_value"
+        const val INT_NO_INSERT_PK = "my_table.int_no_insert_pk"
 
         const val CREATE_TABLE = \"\"\"CREATE TABLE my_table (
             string_null TEXT ,
@@ -93,7 +93,6 @@ data class my_table(
 
         const val COUNT_ALL = "select count(_id) from User"
         const val SELECT_BY_NAME = "select * from User where name=?"
-
     }
 
     val contentValue: ContentValues
@@ -146,16 +145,15 @@ data class my_table(
 
     companion object {
         const val TABLE_NAME = "my_table"
-        const val STRING_NULL = "string_null"
-        const val STR = "str"
+        const val STRING_NULL = "my_table.string_null"
+        const val STR = "my_table.str"
 
         const val CREATE_TABLE = \"\"\"CREATE TABLE my_table (
             string_null TEXT ,
             str TEXT NOT NULL \n        )\"\"\"
 
-
-        const val SELECT_BY_1_COL = "SELECT * FROM my_table WHERE string_null=?"
-        const val SELECT_BY_2_COL = "SELECT * FROM my_table WHERE string_null=? AND str=?"
+        const val SELECT_BY_1_COL = "SELECT * FROM my_table WHERE my_table.string_null=?"
+        const val SELECT_BY_2_COL = "SELECT * FROM my_table WHERE my_table.string_null=? AND my_table.str=?"
     }
 
     val contentValue: ContentValues

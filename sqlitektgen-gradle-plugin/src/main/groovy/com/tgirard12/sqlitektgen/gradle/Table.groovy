@@ -33,5 +33,9 @@ class Table {
         def nameUpper() {
             return name.toUpperCase()
         }
+
+        String columnNameFull(String table) {
+            "$table.${this.name}"
+        }
     }
 }

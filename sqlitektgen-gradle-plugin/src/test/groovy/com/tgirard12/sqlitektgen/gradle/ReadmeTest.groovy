@@ -38,6 +38,9 @@ class ReadmeTest extends Specification {
     "queries": {
       "COUNT_ALL": "select count(_id) from User",
       "SELECT_BY_NAME": "select * from User where name=?"
+    },
+    "selectBy": {
+      "SELECT_BY_NAME_AND_AGE": "name,age"
     }
   }
 ]"""
@@ -62,9 +65,9 @@ data class User(
 
     companion object {
         const val TABLE_NAME = "User"
-        const val _ID = "_id"
-        const val NAME = "name"
-        const val AGE = "age"
+        const val _ID = "User._id"
+        const val NAME = "User.name"
+        const val AGE = "User.age"
 
         const val CREATE_TABLE = \"\"\"CREATE TABLE User (
             _id INTEGER NOT NULL NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -73,7 +76,7 @@ data class User(
 
         const val COUNT_ALL = "select count(_id) from User"
         const val SELECT_BY_NAME = "select * from User where name=?"
-
+        const val SELECT_BY_NAME_AND_AGE = "SELECT * FROM User WHERE User.name=? AND User.age=?"
     }
 
     val contentValue: ContentValues
